@@ -2,7 +2,7 @@ use "C:\Users\liuch\Desktop\邻近矩阵.dta"
 spatwmat using"C:\Users\liuch\Desktop\邻近矩阵.dta",name(w) standardize
 import excel "C:\Users\liuch\Desktop\基准回归分析 -控制变量.xlsx", sheet("111") firstrow
 foreach yr in 2011 2012 2013 2014 2015 2016 2017 2018 2019 2020 2021 {
-    preserve // 保存当前数据状态
+    preserve 
     keep if 年份 == `yr' 
     display "Analyzing data for year: `yr'"
     spatgsa SynergisticEmissionReductionI, weights(w) moran
@@ -29,111 +29,41 @@ xsmle SERI DEI ,fe model(sdm) wmat(w)  type(ind) nolog noeffects//最终版本
 outreg2 using "C:\Users\liuch\Desktop\1.doc", replace
 xsmle SERI DEI TIGR NEPO PCGDP NEISI PerRoad Patents PDensity IEnterprises CoalReserves ThermalPower Universities CoalInvestment ForestCoverage PTransportation ,fe model(sdm) wmat(w)  type(ind) nolog noeffects//修正后的全字母（参考）
 xsmle SERI DEI TIGR NEPO PCGDP NEISI PerRoad Patents PDensity IEnterprises CoalInvestment PTransportation ,fe model(sdm) wmat(w)  type(ind) nolog noeffects//最终版本
-
 outreg2 using "C:\Users\liuch\Desktop\2.doc", replace
-
-  //1.3模型结果分解
-
 xsmle SERI DEI TIGR NEPO PCGDP NEISI PerRoad Patents PDensity IEnterprises CoalInvestment PTransportation ,fe model(sdm) wmat(w)  type(ind) nolog effects
-
 outreg2 using "C:\Users\liuch\Desktop\模型分解.doc", replace
-
-
-//2.经济矩阵，构建矩阵
-
 use "C:\Users\liuch\Desktop\经济矩阵.dta"
-
 spatwmat using"C:\Users\liuch\Desktop\经济矩阵.dta",name(w) standardize
-
 use "C:\Users\liuch\Desktop\整体数据.dta"
-
 xtset province 年份
-
-  //2.1经济矩阵，不带控制变量
-
 xsmle SERI DEI,fe model(sdm) wmat(w)  type(ind) nolog noeffects//最终版本
-
 outreg2 using "C:\Users\liuch\Desktop\3.doc", replace
-
-  //2.2经济矩阵，加入控制变量
-
 xsmle SERI DEI TIGR NEPO PCGDP NEISI PerRoad Patents PDensity IEnterprises CoalInvestment PTransportation ,fe model(sdm) wmat(w)  type(ind) nolog noeffects//最终版本
-
 outreg2 using "C:\Users\liuch\Desktop\4.doc", replace
-
- //2.3模型结果分解
-
 xsmle SERI DEI TIGR NEPO PCGDP NEISI PerRoad Patents PDensity IEnterprises CoalInvestment PTransportation ,fe model(sdm) wmat(w)  type(ind) nolog effects
-
 outreg2 using "C:\Users\liuch\Desktop\模型分解2.doc", replace
-
-
-
-
-//稳健性检验
-
-
-//更换解释变量
-
-//邻接矩阵
 use "C:\Users\liuch\Desktop\邻近矩阵.dta"
-
 spatwmat using"C:\Users\liuch\Desktop\邻近矩阵.dta",name(w) standardize
-
 use "C:\Users\liuch\Desktop\整体数据.dta"
-
 xtset province 年份
-
 xsmle SERI DEI2 TIGR NEPO PCGDP NEISI PerRoad Patents PDensity IEnterprises CoalInvestment PTransportation ,fe model(sdm) wmat(w)  type(both) nolog noeffects
-
 outreg2 using "C:\Users\liuch\Desktop\1.doc", replace
-
-
-//经济矩阵
-
 use "C:\Users\liuch\Desktop\经济矩阵.dta"
-
 spatwmat using"C:\Users\liuch\Desktop\经济矩阵.dta",name(w) standardize
-
 use "C:\Users\liuch\Desktop\整体数据.dta"
-
 xtset province 年份
-
 xsmle SERI DEI TIGR NEPO PCGDP NEISI PerRoad Patents PDensity IEnterprises CoalInvestment PTransportation ,fe model(sdm) wmat(w)  type(ind) nolog noeffects
-
 outreg2 using "C:\Users\liuch\Desktop\1.doc", replace
-
-//工具变量(数据准备)
-
 use "C:\Users\liuch\Desktop\邻近矩阵.dta"
-
 spatwmat using"C:\Users\liuch\Desktop\邻近矩阵.dta",name(w) standardize
-
 use "C:\Users\liuch\Desktop\整体数据.dta"
-
 xtset province 年份
-
-
-//2SLS回归
-
-
 ivreg2 SERI (DEI = postoffice) ThermalPower PDensity NEISI CoalInvestment, robust
 estimates store Model_2SLS
 esttab Model_2SLS using "C:\\Users\\liuch\\Desktop\\6.rtf", replace
-
-
-//异质性分析
-
 use "C:\Users\liuch\Desktop\邻近矩阵.dta"
-
 spatwmat using"C:\Users\liuch\Desktop\邻近矩阵.dta",name(w) standardize
-
 use "C:\Users\liuch\Desktop\整体数据.dta"
-
 xtset province 年份
-
 xsmle SERI DEI TIGR NEPO PCGDP NEISI PerRoad Patents PDensity IEnterprises CoalInvestment PTransportation, fe model(sdm) wmat(w) durbin(DEI) type(ind) nolog noeffects if region == "东部"
-
 by region: xsmle SERI DEI TIGR NEPO PCGDP NEISI PerRoad Patents PDensity IEnterprises CoalInvestment PTransportation, fe model(sdm) wmat(w) durbin(DEI) type(ind) nolog noeffects
-
-
